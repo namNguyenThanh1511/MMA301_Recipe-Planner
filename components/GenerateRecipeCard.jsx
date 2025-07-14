@@ -1,11 +1,11 @@
-import {
-  ArrowRight02Icon,
-  HugeiconsFreeIcons,
-} from "@hugeicons/core-free-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { Text } from "react-native";
+import { useRouter } from "expo-router";
+import { Text, TouchableOpacity } from "react-native";
 import Colors from "../shared/Colors";
+
 export default function GenerateRecipeCard() {
+  const router = useRouter();
   return (
     <LinearGradient
       colors={[Colors.BLUE, Colors.PRIMARY]}
@@ -35,6 +35,7 @@ export default function GenerateRecipeCard() {
         Let Our generate personalized recipes just for you!
       </Text>
       <TouchableOpacity
+        onPress={() => router.push("/generate-ai-recipe")}
         style={{
           padding: 12,
           backgroundColor: Colors.WHITE,
@@ -55,7 +56,7 @@ export default function GenerateRecipeCard() {
         >
           Generate with AI
         </Text>
-        <HugeiconsFreeIcons icon={ArrowRight02Icon} color={Colors.PRIMARY} />
+        <Ionicons name="arrow-forward" size={24} color={Colors.PRIMARY} />
       </TouchableOpacity>
     </LinearGradient>
   );
