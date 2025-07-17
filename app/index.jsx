@@ -1,7 +1,7 @@
 import { useConvex } from "convex/react";
 import { useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
-import { ArrowRight } from "lucide-react-native";
+// import { ArrowRight } from "lucide-react-native"; // ❌ Comment tạm
 import { useContext, useEffect } from "react";
 import { Dimensions, Image, Text, View } from "react-native";
 import Button from "../components/shared/Button";
@@ -14,6 +14,7 @@ export default function Index() {
   const router = useRouter();
   const { user, setUser } = useContext(UserContext);
   const convex = useConvex();
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (userInfo) => {
       console.log(userInfo?.email);
@@ -26,6 +27,7 @@ export default function Index() {
     });
     return () => unsubscribe();
   }, []);
+
   return (
     <View
       style={{
@@ -80,8 +82,8 @@ export default function Index() {
             opacity: 0.8,
           }}
         >
-          Let us plan delicious, healthy meals tailored just for you. Achieve
-          your goal with ease using our recipe planner!
+          Let us plan delicious, healthy meals tailored just for you. Achieve your goal with ease
+          using our recipe planner!
         </Text>
       </View>
       <View
@@ -95,7 +97,7 @@ export default function Index() {
         <Button
           title={"Get started"}
           onPress={() => router.push("/auth/SignIn")}
-          icon={<ArrowRight color="white" size={20} />}
+          icon={<Text style={{ color: "white", fontSize: 18, fontWeight: "bold" }}>→</Text>}
         />
       </View>
     </View>

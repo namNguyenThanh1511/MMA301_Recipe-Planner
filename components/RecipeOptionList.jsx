@@ -1,4 +1,5 @@
 import { useMutation } from "convex/react";
+import { useRouter } from "expo-router";
 import { useContext, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { GenerateAIRecipe, GenerateRecipeImage } from "../services/AiModel";
@@ -7,7 +8,6 @@ import Prompt from "../shared/Prompt";
 import { UserContext } from "./../context/UserContext";
 import { api } from "./../convex/_generated/api";
 import LoadingDialog from "./LoadingDialog";
-import { useRouter } from "expo-router";
 
 export default function RecipeOptionList({ recipeOption }) {
   const [loading, setLoading] = useState(false);
@@ -23,38 +23,65 @@ export default function RecipeOptionList({ recipeOption }) {
       recipe?.description +
       "\n" +
       Prompt.GENERATE_COMPLETE_OPTION_PROMPT;
+
     try {
+      // 1. Generate AI Recipe
       const result = await GenerateAIRecipe(PROMPT);
       const extractJson = result.choices[0].message.content
         .replace("```json", "")
         .replace("```", "");
       const parsedJSONResp = JSON.parse(extractJson);
-      console.log(parsedJSONResp);
+      console.log("✅ Generated recipe:", parsedJSONResp);
 
-      // Generate RecipeImage
-      const aiImageResp = await GenerateRecipeImage(
-        parsedJSONResp?.imagePrompt
-      );
-      console.log(aiImageResp?.data?.image);
+      // 2. Generate Recipe Image with proper error handling
+      let imageUrl = "https://via.placeholder.com/400x300/f0f0f0/666666?text=Recipe+Image";
 
-      // Save to Database
+      try {
+        console.log("🖼️ Generating image for:", parsedJSONResp?.imagePrompt);
+        const aiImageResp = await GenerateRecipeImage(parsedJSONResp?.imagePrompt);
+
+        console.log("📊 Image API Response:", aiImageResp?.data);
+
+        // Check if we have credits and valid response
+        if (aiImageResp?.data?.result === "Not Enough Credits") {
+          console.warn("💳 No credits available for image generation");
+          console.log("📝 Using placeholder image instead");
+          // Keep default placeholder
+        } else if (aiImageResp?.data?.image || aiImageResp?.data?.url) {
+          // Success case - extract image URL
+          imageUrl = aiImageResp?.data?.image || aiImageResp?.data?.url;
+          console.log("✅ Generated image URL:", imageUrl);
+        } else {
+          console.warn("⚠️ Unexpected response format:", aiImageResp?.data);
+          // Keep default placeholder
+        }
+      } catch (imageError) {
+        console.error("❌ Image generation failed:", imageError);
+        console.log("📝 Using placeholder image instead");
+        // Continue with placeholder image
+      }
+
+      // 3. Save to Database
+      console.log("💾 Saving recipe with imageUrl:", imageUrl);
       const saveRecipeResult = await CreateRecipe({
         jsonData: parsedJSONResp,
-        imageUrl: aiImageResp?.data?.image,
+        imageUrl: imageUrl, // ✅ Always has a value
         recipeName: parsedJSONResp?.recipeName,
         uid: user?._id,
       });
-      console.log(saveRecipeResult);
 
-      // Redirect to Recipe Details Screen
+      console.log("✅ Recipe saved successfully:", saveRecipeResult);
 
+      // 4. Navigate to recipe detail
       setLoading(false);
       router.push({
         pathname: "/recipe-detail",
         recipeId: saveRecipeResult,
       });
-    } catch (e) {
+    } catch (error) {
+      console.error("❌ Error in recipe creation:", error);
       setLoading(false);
+      alert("Failed to create recipe. Please try again.");
     }
   };
 

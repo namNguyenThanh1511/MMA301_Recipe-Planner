@@ -1,30 +1,57 @@
+import { useState } from "react";
 import { Platform, StyleSheet, Text, TextInput, View } from "react-native";
+import RecipeOptionList from "../../components/RecipeOptionList";
 import { GenerateAIRecipe } from "../../services/AiModel";
 import Button from "./../../components/shared/Button";
 import Colors from "./../../shared/Colors";
 import Prompt from "./../../shared/Prompt";
-import RecipeOptionList from "../../components/RecipeOptionList";
+
 export default function GenerateAiRecipe() {
-  const { input, setInput } = useState();
+  // ✅ Fixed: Use array destructuring instead of object destructuring
+  const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [recipeOption, setRecipeOption] = useState([]);
+
   const GenerateRecipeOptions = async () => {
+    // Add validation
+    if (!input || input.trim() === "") {
+      alert("Please enter ingredients or recipe name");
+      return;
+    }
+
     setLoading(true);
-    // Make AI Model call to generate recipe Options
+
     try {
+      // Make AI Model call to generate recipe Options
       const PROMPT = input + Prompt.GENERATE_RECIPE_OPTION_PROMPT;
+      console.log("🤖 Sending prompt:", PROMPT);
+
       const result = await GenerateAIRecipe(PROMPT);
-      console.log(result.choices[0].message);
+      console.log("📝 AI Response:", result.choices[0].message);
+
+      // Extract and parse JSON
       const extractJson = result.choices[0].message.content
         .replace("```json", "")
-        .replace("```", "");
+        .replace("```", "")
+        .trim();
+
+      console.log("🔍 Extracted JSON:", extractJson);
+
       const parsedJSONResp = JSON.parse(extractJson);
-      console.log(parsedJSONResp);
+      console.log("✅ Parsed Response:", parsedJSONResp);
+
       setRecipeOption(parsedJSONResp);
+    } catch (error) {
+      console.error("❌ Error generating recipe:", error);
+
+      // Better error handling
+      if (error instanceof SyntaxError) {
+        alert("Failed to parse AI response. Please try again.");
+      } else {
+        alert("Failed to generate recipe. Please check your connection and try again.");
+      }
+    } finally {
       setLoading(false);
-    } catch (e) {
-      setLoading(false);
-      console.log(e);
     }
   };
 
@@ -58,26 +85,30 @@ export default function GenerateAiRecipe() {
       <TextInput
         style={styles.textArea}
         onChangeText={(value) => setInput(value)}
-        placeholder="Enter your ingrdient or recipe name"
+        value={input} // ✅ Add controlled input
+        placeholder="Enter your ingredients or recipe name"
+        multiline={true} // ✅ Enable multiline for better UX
+        textAlignVertical="top"
       />
+
       <View
         style={{
           marginTop: 25,
         }}
       >
         <Button
-          title={"Generate Recipe"}
+          title={loading ? "Generating..." : "Generate Recipe"}
           onPress={GenerateRecipeOptions}
           loading={loading}
+          disabled={loading || !input?.trim()} // ✅ Disable when loading or empty
         />
       </View>
 
-      {recipeOption?.length > 0 && (
-        <RecipeOptionList recipeOption={recipeOption} />
-      )}
+      {recipeOption?.length > 0 && <RecipeOptionList recipeOption={recipeOption} />}
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   textArea: {
     padding: 15,
@@ -88,5 +119,6 @@ const styles = StyleSheet.create({
     height: 150,
     textAlignVertical: "top",
     backgroundColor: Colors.WHITE,
+    borderColor: Colors.GRAY, // ✅ Add border color
   },
 });

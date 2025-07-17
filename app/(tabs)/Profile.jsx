@@ -1,25 +1,18 @@
 import {
-  FlatList,
-  Image,
-  Platform,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import React, { useContext } from "react";
-import {
   AnalyticsUpIcon,
   CookBookIcon,
   Login03Icon,
   ServingFoodIcon,
   WalletAdd02Icon,
 } from "@hugeicons/core-free-icons";
-import { UserContext } from "../../context/UserContext";
-import Colors from "../../shared/Colors";
 import { HugeiconsIcon } from "@hugeicons/react-native";
 import { useRouter } from "expo-router";
-import { auth } from "./../../services/FirebaseConfig";
 import { signOut } from "firebase/auth";
+import React, { useContext } from "react";
+import { FlatList, Image, Platform, Text, TouchableOpacity, View } from "react-native";
+import { UserContext } from "../../context/UserContext";
+import Colors from "../../shared/Colors";
+import { auth } from "./../../services/FirebaseConfig";
 const MenuOptions = [
   {
     title: "My Progress",
@@ -55,7 +48,7 @@ export default function Profile() {
       signOut(auth).then(() => {
         console.log("SIGNOUT");
         setUser(null);
-        router.replace("/");
+        router.replace("/Login");
       });
       return;
     }

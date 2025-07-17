@@ -1,5 +1,5 @@
 import { useConvex } from "convex/react";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useContext, useState } from "react";
 import { Alert, Image, Text, View } from "react-native";
@@ -23,21 +23,21 @@ export default function SignIn() {
       .then(async (userCredential) => {
         // Signed in
         const user = userCredential.user;
+        console.log(user);
         const userData = await convex.query(api.Users.GetUser, {
           email: email,
         });
         console.log(userData);
         setUser(userData);
+        console.log("Login successful, navigating to main app...");
+        router.replace("/(tabs)/Home"); // Chuyển đến main app
         // ...
       })
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
         console.log(errorMessage);
-        Alert.alert(
-          "Incorrect Email & Password",
-          "Please enter valid email and password"
-        );
+        Alert.alert("Incorrect Email & Password", "Please enter valid email and password");
       });
   };
   return (
@@ -71,11 +71,7 @@ export default function SignIn() {
         }}
       >
         <Input placeholder={"Email"} onChangeText={setEmail} />
-        <Input
-          placeholder={"Password"}
-          password={true}
-          onChangeText={setPassword}
-        />
+        <Input placeholder={"Password"} password={true} onChangeText={setPassword} />
         <View
           style={{
             marginTop: 15,

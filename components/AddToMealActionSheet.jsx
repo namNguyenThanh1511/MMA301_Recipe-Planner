@@ -1,55 +1,58 @@
-import {
-  Coffee02Icon,
-  Moon02Icon,
-  Sun03Icon,
-} from "@hugeicons/core-free-icons";
 import { useMutation } from "convex/react";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Alert, FlatList, Text, TouchableOpacity, View } from "react-native";
 import { UserContext } from "../context/UserContext";
 import { api } from "../convex/_generated/api";
 import Colors from "../shared/Colors";
 import DateSelectionCard from "./DateSelectionCard";
 import Button from "./shared/Button";
-export default function AddToMealActionSheet({
-  recipeDetail,
-  hideActionSheet,
-}) {
+
+export default function AddToMealActionSheet({ recipeDetail, hideActionSheet }) {
   const [dateList, setDateList] = useState([]);
   const [selectedDate, setSelectedDate] = useState();
   const [selectedMeal, setSelectedMeal] = useState();
   const { user } = useContext(UserContext);
   const CreateMealPlan = useMutation(api.MealPlan.CreateMealPlan);
+
+  // ✅ Simple emoji solution - works immediately!
   const mealOptions = [
     {
       title: "Breakfast",
-      icon: Coffee02Icon,
+      icon: "☕",
+      bgColor: "#FFF3E0",
     },
     {
       title: "Lunch",
-      icon: Sun03Icon,
+      icon: "☀️",
+      bgColor: "#FFF8E1",
     },
     {
       title: "Dinner",
-      icon: Moon02Icon,
+      icon: "🌙",
+      bgColor: "#F3E5F5",
     },
   ];
 
   const AddToMealPlan = async () => {
-    if (!selectedDate && !selectedMeal) {
+    if (!selectedDate || !selectedMeal) {
       Alert.alert("Error!", "Please Select All Details");
       return;
     }
 
-    const result = await CreateMealPlan({
-      date: selectedDate,
-      mealType: selectedMeal,
-      recipeId: recipeDetail?._id,
-      uid: user?._id,
-    });
-    console.log(result);
-    Alert.alert("Added!", "Added to Meal Plan");
-    hideActionSheet();
+    try {
+      const result = await CreateMealPlan({
+        date: selectedDate,
+        mealType: selectedMeal,
+        recipeId: recipeDetail?._id,
+        uid: user?._id,
+      });
+      console.log("✅ Meal plan created:", result);
+      Alert.alert("Added!", "Added to Meal Plan");
+      hideActionSheet();
+    } catch (error) {
+      console.error("❌ Error creating meal plan:", error);
+      Alert.alert("Error!", "Failed to add to meal plan");
+    }
   };
 
   return (
@@ -66,7 +69,6 @@ export default function AddToMealActionSheet({
 
       <DateSelectionCard setSelectedDate={setSelectedDate} />
 
-      {/* Select Meal */}
       <Text
         style={{
           fontSize: 20,
@@ -76,9 +78,10 @@ export default function AddToMealActionSheet({
       >
         Select Meal
       </Text>
+
       <FlatList
         data={mealOptions}
-        numColumns={4}
+        numColumns={3}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity
@@ -86,24 +89,29 @@ export default function AddToMealActionSheet({
             style={{
               flex: 1,
               alignItems: "center",
-              padding: 10,
-              borderWidth: 1,
-              borderRadius: 10,
+              padding: 15,
+              borderWidth: 2,
+              borderRadius: 12,
               margin: 5,
-              backgroundColor:
-                selectedMeal === item.title ? Colors.SECONDERY : Colors.WHITE,
-              borderColor:
-                selectedMeal === item.title ? Colors.PRIMARY : Colors.GRAY,
+              backgroundColor: selectedMeal === item.title ? Colors.SECONDERY : item.bgColor,
+              borderColor: selectedMeal === item.title ? Colors.PRIMARY : Colors.LIGHT_GRAY,
             }}
           >
-            <item.icon
-              color={selectedMeal === item.title ? Colors.PRIMARY : Colors.GRAY}
-            />
+            {/* ✅ Simple emoji icon - no import needed! */}
             <Text
               style={{
-                fontSize: 16,
-                fontWeight: "bold",
-                marginTop: 5,
+                fontSize: 28,
+                marginBottom: 5,
+              }}
+            >
+              {item.icon}
+            </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: "600",
+                color: selectedMeal === item.title ? Colors.PRIMARY : Colors.DARK_GRAY,
+                textAlign: "center",
               }}
             >
               {item.title}
@@ -111,22 +119,15 @@ export default function AddToMealActionSheet({
           </TouchableOpacity>
         )}
       />
-      <View
-        style={{
-          marginTop: 15,
-        }}
-      >
+
+      <View style={{ marginTop: 20 }}>
         <Button title={"+ Add to Meal Plan"} onPress={AddToMealPlan} />
-        <TouchableOpacity
-          onPress={() => hideActionSheet()}
-          style={{
-            padding: 15,
-          }}
-        >
+        <TouchableOpacity onPress={() => hideActionSheet()} style={{ padding: 15 }}>
           <Text
             style={{
               textAlign: "center",
-              fontSize: 20,
+              fontSize: 18,
+              color: Colors.GRAY,
             }}
           >
             Cancel

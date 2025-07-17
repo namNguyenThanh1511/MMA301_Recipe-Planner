@@ -1,11 +1,11 @@
-import { FlatList, Platform, Text, View } from "react-native";
-import React from "react";
-import GenerateRecipeCard from "../../components/GenerateRecipeCard";
 import { useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import React from "react";
+import { FlatList, Platform, Text, View } from "react-native";
+import GenerateRecipeCard from "../../components/GenerateRecipeCard";
 import RecipeCard from "../../components/RecipeCard";
+import { api } from "../../convex/_generated/api";
 export default function Meals() {
-  const recipeList = useQuery(api.Recipes.GetAllRecipes);
+  const recipeList = useQuery(api.Recipes.getAllRecipes);
   console.log(recipeList);
   return (
     <FlatList
