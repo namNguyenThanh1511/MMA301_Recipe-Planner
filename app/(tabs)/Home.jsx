@@ -14,7 +14,8 @@ export default function Home() {
       router.replace("/preferance");
     }
     if (!user?._id) {
-      router.reload();
+      // Instead of router.reload(), navigate to SignIn
+      router.replace("/auth/SignIn");
     }
   }, [user]);
   return (
